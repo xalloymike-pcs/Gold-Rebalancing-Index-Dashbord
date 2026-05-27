@@ -69,7 +69,7 @@ st.markdown(
     """
     <div style="
         font-size:22px;
-        color:#888888;
+        color:#D4AF37;
         padding:8px 12px;
         border-left:3px solid #D4AF37;
         background-color:rgba(255,255,255,0.03);
@@ -84,11 +84,11 @@ st.markdown(
 )
 
 st.markdown(
-    "<p style='font-size:16px; color:white;'>Core：Volatility、Trend、Band、Regime、Suggestion</p>",
+    "<p style='font-size:22px; color:white;'>Core：Volatility、Trend、Band、Regime、Suggestion</p>",
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='font-size:16px; color:white;'>Extra：ATR、ADX、Momentum、BB Width、RSI</p>",
+    "<p style='font-size:22px; color:white;'>Extra：ATR、ADX、Momentum、BB Width、RSI</p>",
     unsafe_allow_html=True
 )
 
