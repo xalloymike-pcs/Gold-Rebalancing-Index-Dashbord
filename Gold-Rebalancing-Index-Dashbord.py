@@ -80,8 +80,8 @@ st.markdown(
 # =========================
 
 df = yf.download(
-    "GC=F",
-    period="2y",
+    "XAUUSD=X",
+    period="1y",
     interval="1d",
     auto_adjust=True
 )
