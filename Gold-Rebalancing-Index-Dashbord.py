@@ -54,9 +54,8 @@ df = yf.download(
     "GC=F",
     period="2y",
     interval="1d",
-    auto_adjust=False
+    auto_adjust=True
 )
-
 # =========================
 # 修正欄位
 # =========================
@@ -83,14 +82,30 @@ df = df.rename(columns={
 # 只保留需要資料
 # =========================
 
-df = df.loc[:, ["Date", "High", "Low", "Close"]]
+cols = ["Date", "High", "Low"]
+
+if "Close" in df.columns:
+    cols.append("Close")
+
+elif "Adj Close" in df.columns:
+    df["Close"] = df["Adj Close"]
+    cols.append("Close")
+
+else:
+    st.error("找不到 Close 欄位")
+    st.stop()
+
+df = df.loc[:, cols]
 
 # =========================
 # 資料清洗
 # =========================
 
 df = df.replace([np.inf, -np.inf], np.nan)
-df = df.dropna()
+
+df = df.dropna(subset=["High", "Low", "Close"])
+
+st.write("有效資料筆數:", len(df))
 
 if len(df) < 20:
     st.error("資料不足，無法計算策略")
