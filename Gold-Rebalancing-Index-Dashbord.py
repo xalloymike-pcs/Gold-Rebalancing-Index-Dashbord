@@ -80,7 +80,7 @@ st.markdown(
 # =========================
 
 df = yf.download(
-    "XAUUSD=X",
+    "GLD",
     period="1y",
     interval="1d",
     auto_adjust=True
