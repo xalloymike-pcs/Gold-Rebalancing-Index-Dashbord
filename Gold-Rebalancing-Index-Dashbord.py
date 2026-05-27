@@ -16,6 +16,38 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+/* 主背景 */
+.stApp {
+    background-color: #0B0F17;
+    color: #FAFAFA;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #131A24;
+}
+
+/* metric 卡片 */
+[data-testid="metric-container"] {
+    background-color: #131A24;
+    border: 1px solid #222;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+/* DataFrame */
+[data-testid="stDataFrame"] {
+    background-color: #131A24;
+}
+
+/* Tabs */
+button[data-baseweb="tab"] {
+    color: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 /* 隱藏 Streamlit Header */
 header[data-testid="stHeader"]{
     display: none;
