@@ -80,7 +80,7 @@ st.markdown(
 # =========================
 
 df = yf.download(
-    "GLD",
+    "GC=F",
     period="1y",
     interval="1d",
     auto_adjust=True
