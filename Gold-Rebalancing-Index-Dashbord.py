@@ -513,6 +513,27 @@ chart = (
         width=1100,
         height=500
     )
+    .configure(
+        background="#0B0F17"
+    )
+    .configure_view(
+        fill="#0B0F17",
+        stroke=None
+    )
+    .configure_axis(
+        labelColor="#D1D4DC",
+        titleColor="#D1D4DC",
+        gridColor="#1F2937",
+        domainColor="#374151",
+        tickColor="#374151",
+        labelFontSize=13,
+        titleFontSize=14
+    )
+    .configure_legend(
+        labelColor="#D1D4DC",
+        titleColor="#D1D4DC",
+        orient="top"
+    )
     .interactive()
 )
 
