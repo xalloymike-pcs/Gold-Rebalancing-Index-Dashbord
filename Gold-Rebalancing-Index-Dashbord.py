@@ -65,6 +65,7 @@ h1{
 """, unsafe_allow_html=True)
 
 st.title("📊 Gold Rebalancing Index Dashboard")
+st.title("資料來自Yahoo Finance連續主力合約黃金期貨，僅作為圖表展示及波動研究，不適合精準交易")
 
 st.markdown(
     "<p style='font-size:16px; color:white;'>Core：Volatility、Trend、Band、Regime、Suggestion</p>",
