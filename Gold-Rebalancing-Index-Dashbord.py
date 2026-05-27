@@ -68,11 +68,16 @@ st.title("📊 Gold Rebalancing Index Dashboard")
 st.markdown(
     """
     <div style="
-        font-size:18px;
-        color:gray;
-        margin-top:-10px;
+        font-size:22px;
+        color:#888888;
+        padding:8px 12px;
+        border-left:3px solid #D4AF37;
+        background-color:rgba(255,255,255,0.03);
+        border-radius:6px;
+        margin-bottom:15px;
     ">
-    資料來自 Yahoo Finance 連續主力合約黃金期貨，僅作為圖表展示及波動研究，不適合精準交易。
+    ⚠️ Data sourced from Yahoo Finance continuous front-month gold futures contracts. 
+    Intended for visualization and volatility research only, not for execution or precise trading decisions.
     </div>
     """,
     unsafe_allow_html=True
