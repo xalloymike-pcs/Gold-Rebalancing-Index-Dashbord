@@ -45,9 +45,6 @@ button[data-baseweb="tab"] {
     color: white;
 }
 
-</style>
-""", unsafe_allow_html=True)
-
 /* 隱藏 Streamlit Header */
 header[data-testid="stHeader"]{
     display: none;
