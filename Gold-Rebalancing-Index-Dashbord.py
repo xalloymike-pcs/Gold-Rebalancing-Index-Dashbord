@@ -74,6 +74,7 @@ st.markdown(
         border-left:3px solid #D4AF37;
         background-color:rgba(255,255,255,0.03);
         border-radius:6px;
+	margin-top:15px;
         margin-bottom:15px;
     ">
     ⚠️ Data sourced from Yahoo Finance continuous front-month gold futures contracts. 
@@ -816,4 +817,24 @@ with col9:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+#底部說明
+
+st.markdown(
+    """
+    <div style="
+        font-size:22px;
+        color:#D4AF37;
+        padding:8px 12px;
+        border-left:3px solid #D4AF37;
+        background-color:rgba(255,255,255,0.03);
+        border-radius:6px;
+	margin-top:15px;
+        margin-bottom:15px;
+    ">
+    ⚠️ Differences between indicator signals may arise, as each model captures distinct market structures, time horizons, and behavioral dynamics. This is a natural characteristic of financial markets.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
