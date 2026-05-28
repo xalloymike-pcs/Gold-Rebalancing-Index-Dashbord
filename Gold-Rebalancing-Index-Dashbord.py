@@ -447,7 +447,7 @@ text_date = (
         fontWeight="bold",
 	color="white", 
         dx=INFO_X,
-        dy=INFO_Y
+        dy=INFO_Y,
     )
     .encode(
         text=alt.condition(
@@ -466,7 +466,7 @@ text_high = (
         color="red",
         fontSize=22,
         dx=INFO_X,
-        dy=INFO_Y + LINE_SPACING
+        dy=INFO_Y + LINE_SPACING,
     )
     .encode(
         text=alt.condition(
@@ -484,7 +484,7 @@ text_low = (
         align="left",
         color="#66FF66",
         fontSize=22,
-        dy=INFO_Y + LINE_SPACING * 2
+        dy=INFO_Y + LINE_SPACING * 2,
         dy=55
     )
     .encode(
@@ -504,7 +504,7 @@ text_close = (
         color="goldenrod",
         fontSize=22,
         dx=INFO_X,
-        dy=INFO_Y + LINE_SPACING * 3
+        dy=INFO_Y + LINE_SPACING * 3,
     )
     .encode(
         text=alt.condition(
