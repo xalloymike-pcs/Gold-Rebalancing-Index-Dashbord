@@ -84,11 +84,11 @@ st.markdown(
 )
 
 st.markdown(
-    "<p style='font-size:22px; color:white;'>Core：Volatility、Trend、Band、Regime、Suggestion</p>",
+    "<p style='font-size:22px; color:white;'>Core：Volatility、Trend、Band Deviation、Regime、Suggestion</p>",
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='font-size:22px; color:white;'>Extra：ATR、ADX、Momentum、BB Width、RSI</p>",
+    "<p style='font-size:22px; color:white;'>Extra：ATR、NATR、RSI、ADX、Momentum、Bollinger Band Width</p>",
     unsafe_allow_html=True
 )
 
@@ -191,7 +191,7 @@ trend_series = pd.Series(close).pct_change(5)
 trend = trend_series.iloc[-1]
 
 # =========================
-# 📉 3. Band deviation 布林帶
+# 📉 3. Band deviation 布林帶偏離度
 # =========================
 
 s = pd.Series(close)
@@ -435,7 +435,9 @@ points = (
 )
 
 # 固定資訊
-info_df = pd.DataFrame({ "x": [10], "y": [10]})
+INFO_X = 20
+INFO_Y = 20
+LINE_SPACING = 28
 
 text_date = (
     alt.Chart(df)
@@ -444,8 +446,8 @@ text_date = (
         fontSize=22,
         fontWeight="bold",
 	color="white", 
-        dx=10,
-        dy=10
+        dx=INFO_X,
+        dy=INFO_Y
     )
     .encode(
         text=alt.condition(
@@ -463,8 +465,8 @@ text_high = (
         align="left",
         color="red",
         fontSize=22,
-        dx=10,
-        dy=35
+        dx=INFO_X,
+        dy=INFO_Y + LINE_SPACING
     )
     .encode(
         text=alt.condition(
@@ -482,7 +484,7 @@ text_low = (
         align="left",
         color="#66FF66",
         fontSize=22,
-        dx=10,
+        dy=INFO_Y + LINE_SPACING * 2
         dy=55
     )
     .encode(
@@ -501,8 +503,8 @@ text_close = (
         align="left",
         color="goldenrod",
         fontSize=22,
-        dx=10,
-        dy=75
+        dx=INFO_X,
+        dy=INFO_Y + LINE_SPACING * 3
     )
     .encode(
         text=alt.condition(
@@ -561,9 +563,7 @@ st.altair_chart(chart, use_container_width=True)
 # Professional UI
 # =========================
 
-# =========================
-# Core Indicators
-# =========================
+# Core Indicators====================================
 
 st.subheader("📊 Core Indicators")
 
@@ -611,8 +611,8 @@ col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     st.markdown("""
     <div class="card">
-        <div class="title">Volatility、年化波動率</div>
-        <div class="subtitle">最近14天；2025年約14-22%</div>
+        <div class="title">14D Parkinson Volatility、年化波動率</div>
+        <div class="subtitle">近三年平均約10%-14%%</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -633,7 +633,7 @@ with col2:
 with col3:
     st.markdown("""
     <div class="card">
-        <div class="title">Band Deviation、布林帶</div>
+        <div class="title">Band Deviation、布林帶偏離度</div>
         <div class="subtitle">正常|dev|< 0.5，超過有波動</div>
     </div>
     """, unsafe_allow_html=True)
@@ -656,16 +656,14 @@ with col5:
     st.markdown("""
     <div class="card">
         <div class="title">Last Suggestion、最新建議</div>
-        <div class="subtitle">123456789</div>
+        <div class="subtitle">僅供趨勢參考</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown(f"<div class='big-number'>{action}</div>", unsafe_allow_html=True)
 
 
-# =========================
-# Extra Indicators
-# =========================
+# Extra Indicators====================================
 
 st.subheader("📊 Extra Indicators")
 
@@ -726,7 +724,7 @@ with col4:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">ATR、原始波動</div>
-        <div class="metric-value">{atr_value:.4f}</div>
+        <div class="metric-value">{atr_value:.2f}</div>
         <div class="metric-desc">
             平均波動幅度<br>
             數值越高波動越劇烈
@@ -790,8 +788,8 @@ with col8:
 with col9:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">BB Width、市場環境</div>
-        <div class="metric-value">{bb_width:.4f}</div>
+        <div class="metric-title">Bollinger Band Width、布林帶寬度</div>
+        <div class="metric-value">{bb_width:.2f}</div>
         <div class="metric-desc">
             &lt; 0.03：安靜<br>
             &gt; 0.08：吵鬧
