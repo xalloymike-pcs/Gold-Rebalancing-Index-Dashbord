@@ -484,8 +484,8 @@ text_low = (
         align="left",
         color="#66FF66",
         fontSize=22,
+        dx=INFO_X,
         dy=INFO_Y + LINE_SPACING * 2,
-        dy=55
     )
     .encode(
         text=alt.condition(
