@@ -445,11 +445,12 @@ text_date = (
         align="left",
         fontSize=22,
         fontWeight="bold",
-	color="white", 
-        dx=INFO_X,
-        dy=INFO_Y,
+        color="white"
     )
     .encode(
+   	x=alt.value(INFO_X),
+    	y=alt.value(INFO_Y),
+
         text=alt.condition(
             nearest,
             alt.Text("Date:T", format="%Y-%m-%d"),
@@ -464,11 +465,12 @@ text_high = (
     .mark_text(
         align="left",
         color="red",
-        fontSize=22,
-        dx=INFO_X,
-        dy=INFO_Y + LINE_SPACING,
+        fontSize=22
     )
     .encode(
+    	x=alt.value(INFO_X),
+    	y=alt.value(INFO_Y + LINE_SPACING),
+
         text=alt.condition(
             nearest,
             alt.Text("High:Q", format=".2f"),
@@ -483,11 +485,12 @@ text_low = (
     .mark_text(
         align="left",
         color="#66FF66",
-        fontSize=22,
-        dx=INFO_X,
-        dy=INFO_Y + LINE_SPACING * 2,
+        fontSize=22
     )
     .encode(
+    	x=alt.value(INFO_X),
+    	y=alt.value(INFO_Y + LINE_SPACING * 2),
+
         text=alt.condition(
             nearest,
             alt.Text("Low:Q", format=".2f"),
@@ -502,11 +505,12 @@ text_close = (
     .mark_text(
         align="left",
         color="goldenrod",
-        fontSize=22,
-        dx=INFO_X,
-        dy=INFO_Y + LINE_SPACING * 3,
+        fontSize=22
     )
     .encode(
+    	x=alt.value(INFO_X),
+    	y=alt.value(INFO_Y + LINE_SPACING * 3),
+
         text=alt.condition(
             nearest,
             alt.Text("Close:Q", format=".2f"),
