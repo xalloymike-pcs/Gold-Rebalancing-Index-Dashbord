@@ -148,13 +148,50 @@ df = df.loc[:, cols]
 # =========================
 
 df = df.replace([np.inf, -np.inf], np.nan)
-
 df = df.dropna(subset=["High", "Low", "Close"])
 
-st.write("有效資料筆數:", len(df))
+# Data Validation
+valid_rows = len(df)
+if "Date" in df.columns:
+    start_date = df["Date"].iloc[0].strftime("%Y-%m-%d")
+    end_date = df["Date"].iloc[-1].strftime("%Y-%m-%d")
+else:
+    start_date = df.index[0].strftime("%Y-%m-%d")
+    end_date = df.index[-1].strftime("%Y-%m-%d")
 
-if len(df) < 20:
-    st.error("資料不足，無法計算策略")
+# Info Bar
+col1, col2, col3 = st.columns(3)
+
+st.markdown("""
+<style>
+/* Metric Label */
+[data-testid="stMetricLabel"] {
+    color: #888888;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+/* Metric Value */
+[data-testid="stMetricValue"] {
+    color: #D4AF37;
+    font-size: 32px;
+    font-weight: 700;
+}
+</style>
+""", unsafe_allow_html=True)
+
+col1.metric("有效資料筆數", f"{valid_rows:,}")
+col2.metric("起始日期", start_date)
+col3.metric("最新日期", end_date)
+
+# Minimum Data Check
+if valid_rows < 60:
+
+    st.error(
+        "資料不足，至少需要 60 筆資料才能計算 "
+        "Volatility / Trend / Regime Strategy"
+    )
+
     st.stop()
 
 # =========================
@@ -172,70 +209,65 @@ close = np.array([x[3] for x in history])
 latest_date = dates[-1]
 latest_close = close[-1]
 
+# 通用=========================
+
+high_s = pd.Series(high)
+low_s = pd.Series(low)
+close_s = pd.Series(close)
+
+ema20 = close_s.ewm(span=20).mean()
+ema60 = close_s.ewm(span=60).mean()
+std20 = close_s.ewm(span=20).std()
+
+n = 14
+lookback = 20
+
 # =========================
-# 📊 1. Volatility (Parkinson)、波動率
+# 📊 1. Parkinson Volatility、波動率
 # =========================
 
-rs = np.log(high / low) ** 2
+parkinson_rs = np.log(high_s / low_s) ** 2
+parkinson_var = (parkinson_rs/ (4 * np.log(2)))
+parkinson_vol_series = (parkinson_var.ewm(span=20).mean())
 
-vol_raw = np.sqrt(rs / (4 * np.log(2)))
-vol_smooth = pd.Series(vol_raw).ewm(span=14).mean()
-
-vol = vol_smooth.iloc[-1] * np.sqrt(252)
+vol = (np.sqrt(parkinson_vol_series.iloc[-1])* np.sqrt(252))
 
 # =========================
 # 📈 2. Trend 趨勢
 # =========================
 
-trend_series = pd.Series(close).pct_change(5)
+trend_series = np.log(ema20 / ema60)
 trend = trend_series.iloc[-1]
 
 # =========================
 # 📉 3. Band deviation 布林帶偏離度
 # =========================
 
-s = pd.Series(close)
-
-ma = s.ewm(span=10).mean()
-std = s.ewm(span=10).std()
-
-latest_price = s.iloc[-1]
-latest_ma = ma.iloc[-1]
-latest_std = max(std.iloc[-1], 1e-6)
-
-band_dev = (latest_price - latest_ma) / latest_std
+latest_price = close_s.iloc[-1]
+band_dev = (latest_price - ema20.iloc[-1]) / max(std20.iloc[-1], 1e-6)
 
 # =========================
 # 🧠4. Regime、市場狀態（用歷史資料）
 # =========================
 
-vol_series = pd.Series(np.sqrt(rs))
-
-trend_series = pd.Series(close).pct_change(5)
-
-vol_mean = vol_series.ewm(span=5).mean()
-vol_std = vol_series.ewm(span=5).std()
+vol_series = np.sqrt(parkinson_vol_series)
+vol_mean = vol_series.ewm(span=10).mean()
+vol_std = (vol_series.ewm(span=10).std().clip(lower=1e-6))
 vol_z = (vol_series - vol_mean) / vol_std
-
-trend_mean = trend_series.ewm(span=5).mean()
-trend_std = trend_series.ewm(span=5).std()
-trend_z = (trend_series - trend_mean) / trend_std
-
 vol_z_latest = vol_z.iloc[-1]
-trend_z_latest = trend_z.iloc[-1]
 
-def get_regime(vol_z, trend_z):
+def get_regime(vol_z, trend):
 
-    if abs(vol_z) > 0.5 and abs(trend_z) < 0.2:
+    if abs(vol_z) > 0.5 and abs(trend) < 0.01:
         return "Mean Reversion、均值回歸"
 
-    elif abs(trend_z) > 0.5:
+    elif abs(trend) > 0.01:
         return "Trend、趨勢延續"
 
     else:
         return "Mixed、不明確"
 
-regime = get_regime(vol_z_latest, trend_z_latest)
+regime = get_regime(vol_z_latest,trend)
 
 # =========================
 # 🎯 5. Last suggestion、最新建議
@@ -251,7 +283,7 @@ def get_action(regime, band_dev, trend):
 
     if "Mean Reversion、均值回歸" in regime:
 
-        if abs(trend) > 0.5:
+        if abs(trend) > 0.01:
             return "小倉、觀望"
 
         if band_dev > 2:
@@ -271,46 +303,48 @@ action = get_action(regime, band_dev, trend)
 # ATR、市場真實波動：高=大行情、低=盤整
 # =========================
 
-n = 14
+df = pd.DataFrame({"high": high,"low": low,"close": close})
+prev_close = df["close"].shift(1)
 
-df2 = pd.DataFrame({"high": high,"low": low,"close": close})
-
-prev_close = df2["close"].shift(1)
-
+# === True Range ===
 tr = pd.DataFrame({
-    "hl": df2["high"] - df2["low"],
-    "hc": (df2["high"] - prev_close).abs(),
-    "lc": (df2["low"] - prev_close).abs()
+    "hl": df["high"] - df["low"],
+    "hc": (df["high"] - prev_close).abs(),
+    "lc": (df["low"] - prev_close).abs()
 }).max(axis=1)
 
-tr.iloc[0] = df2["high"].iloc[0] - df2["low"].iloc[0]
+tr.iloc[0] = (df["high"].iloc[0]- df["low"].iloc[0])
 
-atr = tr.ewm(alpha=1/n, adjust=False, min_periods=n).mean()
-
+# === ATR (Wilder) ===
+atr = tr.ewm(alpha=1/n,adjust=False,min_periods=n).mean()
 atr_value = atr.iloc[-1]
 
-atr_norm = atr / df2["close"]
+# === Normalized ATR ===
+atr_norm = atr / df["close"]
 atr_value_norm = atr_norm.iloc[-1]
 
 # =========================
 # Bollinger width、壓縮或擴張：壓縮=市場安靜(<0.03)、寬=市場劇烈(>0.1)
 # =========================
 
-bb_width_series = (std / ma).ewm(span=10).mean()
+upper_band = ema20 + 2 * std20
+lower_band = ema20 - 2 * std20
+
+bb_width_series = ((4 * std20 / ema20).ewm(span=10).mean())
 bb_width = bb_width_series.iloc[-1]
 
 # =========================
 # Momentum、趨勢速度：大於0上升動能、小於0下跌動能
 # =========================
 
-ret = close[-1] / close[-5] - 1
-momentum_score = ret / (vol + 1e-6)
+log_ret = np.log(close_s.iloc[-1]/ close_s.iloc[-lookback])
+momentum_score = log_ret / (vol + 1e-6)
 
 # =========================
-# RSI、買賣超：大於70超買、小於30超賣
+# RSI、買賣超：大於65超買、小於35超賣
 # =========================
 
-delta = pd.Series(close).diff()
+delta = close_s.diff()
 
 gain = delta.clip(lower=0)
 loss = -delta.clip(upper=0)
@@ -318,31 +352,13 @@ loss = -delta.clip(upper=0)
 avg_gain = gain.ewm(alpha=1/n, adjust=False).mean()
 avg_loss = loss.ewm(alpha=1/n, adjust=False).mean()
 
-rs = avg_gain / (avg_loss + 1e-9)
-rsi = 100 - (100 / (1 + rs))
-
+rsi_rs = avg_gain / (avg_loss + 1e-9)
+rsi = 100 - (100 / (1 + rsi_rs))
 rsi_value = rsi.iloc[-1]
 
 # =========================
 # ADX（簡化）、趨勢強度：大於25有趨勢、小於20盤整
 # =========================
-
-n = 14
-
-df = pd.DataFrame({"high": high, "low": low, "close": close})
-
-# === True Range ===
-prev_close = df["close"].shift(1)
-
-tr = pd.DataFrame({
-    "hl": df["high"] - df["low"],
-    "hc": (df["high"] - prev_close).abs(),
-    "lc": (df["low"] - prev_close).abs()
-}).max(axis=1)
-
-tr.iloc[0] = df["high"].iloc[0] - df["low"].iloc[0]
-
-atr = tr.ewm(alpha=1/n, adjust=False).mean()
 
 # === Directional Movement ===
 up_move = df["high"].diff()
@@ -362,7 +378,7 @@ minus_di = 100 * minus_dm.ewm(alpha=1/n, adjust=False).mean() / atr
 dx = (abs(plus_di - minus_di) / (plus_di + minus_di + 1e-9)) * 100
 
 # === ADX ===
-adx = dx.ewm(alpha=1/n, adjust=False).mean()
+adx = dx.ewm(alpha=1/n,adjust=False,min_periods=n).mean()
 
 adx_value = adx.iloc[-1]
 
@@ -370,7 +386,7 @@ adx_value = adx.iloc[-1]
 # Dashboard
 # =========================
 
-st.subheader(f"📅 Latest Date : {latest_date}")
+st.subheader(f"📈 COMEX Gold Continuous Futures")
 
 # =========================
 # Price Chart
@@ -569,7 +585,7 @@ st.altair_chart(chart, use_container_width=True)
 
 # Core Indicators====================================
 
-st.subheader("📊 Core Indicators")
+st.subheader("🎯 Core Indicators")
 
 st.markdown("""
 <style>
@@ -615,8 +631,8 @@ col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     st.markdown("""
     <div class="card">
-        <div class="title">14D Parkinson Volatility、年化波動率</div>
-        <div class="subtitle">近三年平均約10%-14%%</div>
+        <div class="title">Parkinson Volatility、年化波動率</div>
+        <div class="subtitle">20D、過去三年約13%-18%</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -627,7 +643,7 @@ with col2:
     st.markdown("""
     <div class="card">
         <div class="title">Trend、趨勢</div>
-        <div class="subtitle">正常|trend|< 0.02，超過有波動</div>
+        <div class="subtitle">正常|trend|< 0.03，波動顯著</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -638,7 +654,7 @@ with col3:
     st.markdown("""
     <div class="card">
         <div class="title">Band Deviation、布林帶偏離度</div>
-        <div class="subtitle">正常|dev|< 0.5，超過有波動</div>
+        <div class="subtitle">正常|dev|< 1，波動顯著</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -660,7 +676,7 @@ with col5:
     st.markdown("""
     <div class="card">
         <div class="title">Last Suggestion、最新建議</div>
-        <div class="subtitle">僅供趨勢參考</div>
+        <div class="subtitle">-</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -669,7 +685,7 @@ with col5:
 
 # Extra Indicators====================================
 
-st.subheader("📊 Extra Indicators")
+st.subheader("🧭 Extra Indicators")
 
 st.markdown("""
 <style>
@@ -740,9 +756,9 @@ with col5:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">NATR、標準化波動</div>
-        <div class="metric-value">{atr_value_norm:.2f}</div>
+        <div class="metric-value">{atr_value_norm:.4f}</div>
         <div class="metric-desc">
-            價格百分比波動<br>
+            價格百分比波動，正常約0.02，數值越大波動程度越高<br>
             可跨商品比較波動性
         </div>
     </div>
@@ -754,8 +770,8 @@ with col6:
         <div class="metric-title">RSI、相對強弱</div>
         <div class="metric-value">{rsi_value:.2f}</div>
         <div class="metric-desc">
-            RSI &lt; 30：超賣<br>
-            RSI &gt; 70：超買
+            RSI &lt; 25：超賣<br>
+            RSI &gt; 75：超買
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -772,7 +788,7 @@ with col7:
         <div class="metric-value">{adx_value:.2f}</div>
         <div class="metric-desc">
             ADX &lt; 20：盤整<br>
-            ADX &gt; 25：趨勢行情
+            ADX &gt; 25：趨勢較顯著
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -795,8 +811,8 @@ with col9:
         <div class="metric-title">Bollinger Band Width、布林帶寬度</div>
         <div class="metric-value">{bb_width:.2f}</div>
         <div class="metric-desc">
-            &lt; 0.03：安靜<br>
-            &gt; 0.08：吵鬧
+            &lt; 0.03：市場情緒安靜<br>
+            &gt; 0.06：市場情緒吵鬧
         </div>
     </div>
     """, unsafe_allow_html=True)
