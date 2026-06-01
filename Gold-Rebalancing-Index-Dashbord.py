@@ -99,7 +99,7 @@ st.markdown(
 
 df = yf.download(
     "GC=F",
-    period="3y",
+    period="2y",
     interval="1d",
     auto_adjust=True
 )
@@ -325,14 +325,16 @@ atr_norm = atr / df["close"]
 atr_value_norm = atr_norm.iloc[-1]
 
 # =========================
-# Bollinger width、壓縮或擴張：壓縮=市場安靜(<0.03)、寬=市場劇烈(>0.1)
+# Bollinger width、壓縮或擴張：壓縮=市場安靜(<0.05)、寬=市場劇烈(>0.08)
 # =========================
 
-upper_band = ema20 + 2 * std20
-lower_band = ema20 - 2 * std20
+ma20 = close_s.rolling(20).mean()
+std20 = close_s.rolling(20).std()
 
-bb_width_series = ((4 * std20 / ema20).ewm(span=10).mean())
+bb_width_series = 4 * std20 / ma20
 bb_width = bb_width_series.iloc[-1]
+
+bb_percentile = bb_width_series.rank(pct=True).iloc[-1]
 
 # =========================
 # Momentum、趨勢速度：大於0上升動能、小於0下跌動能
@@ -382,6 +384,24 @@ dx = (abs(plus_di - minus_di) / (plus_di + minus_di + 1e-9)) * 100
 adx = dx.ewm(alpha=1/n,adjust=False,min_periods=n).mean()
 
 adx_value = adx.iloc[-1]
+
+# =========================
+# MA
+# =========================
+ma5 = close_s.rolling(5).mean()
+ma15 = close_s.rolling(15).mean()
+ma30 = close_s.rolling(30).mean()
+ma60 = close_s.rolling(60).mean()
+ma100 = close_s.rolling(100).mean()
+ma200 = close_s.rolling(200).mean()
+
+# 最新值
+ma5_value = ma5.iloc[-1]
+ma15_value = ma15.iloc[-1]
+ma30_value = ma30.iloc[-1]
+ma60_value = ma60.iloc[-1]
+ma100_value = ma100.iloc[-1]
+ma200_value = ma200.iloc[-1]
 
 # =========================
 # Dashboard
@@ -812,9 +832,70 @@ with col9:
         <div class="metric-title">Bollinger Band Width、布林帶寬度</div>
         <div class="metric-value">{bb_width:.2f}</div>
         <div class="metric-desc">
-            &lt; 0.03：市場情緒安靜<br>
-            &gt; 0.06：市場情緒吵鬧
+            Historical Percentile：{bb_percentile:.0%}<br>
+            &lt; 0.05：市場情緒安靜<br>
+            &gt; 0.08：市場情緒吵鬧
         </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+#第四、五欄
+
+col10, col11, col12 = st.columns(3)
+
+with col10:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA5、5日均線</div>
+        <div class="metric-value">{ma5_value:,.2f}</div>
+        <div class="metric-desc">Short-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col11:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA15、15日均線</div>
+        <div class="metric-value">{ma15_value:,.2f}</div>
+        <div class="metric-desc">Short-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col12:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA30、30日均線</div>
+        <div class="metric-value">{ma30_value:,.2f}</div>
+        <div class="metric-desc">Medium-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+col13, col14, col15 = st.columns(3)
+
+with col13:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA60、60日均線</div>
+        <div class="metric-value">{ma60_value:,.2f}</div>
+        <div class="metric-desc">Medium-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col14:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA100、100日均線</div>
+        <div class="metric-value">{ma100_value:,.2f}</div>
+        <div class="metric-desc">Long-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col15:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">MA200、200日均線</div>
+        <div class="metric-value">{ma200_value:,.2f}</div>
+        <div class="metric-desc">Long-Term Trend</div>
     </div>
     """, unsafe_allow_html=True)
 
