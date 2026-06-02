@@ -89,7 +89,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='font-size:22px; color:white;'>Extra：ATR、NATR、RSI、ADX、Momentum、Bollinger Band Width</p>",
+    "<p style='font-size:22px; color:white;'>Extra：ATR、NATR、RSI、ADX、Momentum、Bollinger Band Width、MA、BOS</p>",
     unsafe_allow_html=True
 )
 
@@ -403,6 +403,31 @@ ma60_value = ma60.iloc[-1]
 ma100_value = ma100.iloc[-1]
 ma200_value = ma200.iloc[-1]
 
+# 突破判斷
+def get_ma_signal(fast_ma, slow_ma):
+
+    fast = fast_ma.iloc[-1]
+    slow = slow_ma.iloc[-1]
+
+    strength = abs(fast - slow) / slow * 100
+
+    if fast > slow:
+        signal = "Bullish / 多頭排列"
+        color = "#FF1744"      #紅漲
+    elif fast < slow:
+        signal = "Bearish / 空頭排列"
+        color = "#00C853"      #綠跌
+    else:
+        signal = "Neutral / 盤整"
+        color = "#888888"
+
+    return signal, strength, color
+
+# 三組突破訊號
+short_signal, short_strength, short_color = get_ma_signal(ma5, ma15)
+mid_signal, mid_strength, mid_color = get_ma_signal(ma30, ma60)
+long_signal, long_strength, long_color = get_ma_signal(ma100, ma200)
+
 # =========================
 # Dashboard
 # =========================
@@ -664,7 +689,7 @@ with col2:
     st.markdown("""
     <div class="card">
         <div class="title">Trend、趨勢</div>
-        <div class="subtitle">正常|trend|< 0.03，波動顯著</div>
+        <div class="subtitle">正常|trend|< 0.03，超過波動顯著</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -675,7 +700,7 @@ with col3:
     st.markdown("""
     <div class="card">
         <div class="title">Band Deviation、布林帶偏離度</div>
-        <div class="subtitle">正常|dev|< 1，波動顯著</div>
+        <div class="subtitle">正常|dev|< 1，超過波動顯著</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -705,7 +730,6 @@ with col5:
 
 
 # Extra Indicators====================================
-
 st.subheader("🧭 Extra Indicators")
 
 st.markdown("""
@@ -758,7 +782,6 @@ st.markdown("""
 
 
 #第二欄
-
 col4, col5, col6 = st.columns(3)
 
 with col4:
@@ -839,6 +862,9 @@ with col9:
     </div>
     """, unsafe_allow_html=True)
 
+# MA Structure====================================
+st.subheader("🧭 MA Structure")
+
 #第四、五欄
 
 col10, col11, col12 = st.columns(3)
@@ -855,18 +881,18 @@ with col10:
 with col11:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">MA15、15日均線</div>
-        <div class="metric-value">{ma15_value:,.2f}</div>
-        <div class="metric-desc">Short-Term Trend</div>
+        <div class="metric-title">MA30、30日均線</div>
+        <div class="metric-value">{ma30_value:,.2f}</div>
+        <div class="metric-desc">Medium-Term Trend</div>
     </div>
     """, unsafe_allow_html=True)
 
 with col12:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">MA30、30日均線</div>
-        <div class="metric-value">{ma30_value:,.2f}</div>
-        <div class="metric-desc">Medium-Term Trend</div>
+        <div class="metric-title">MA100、100日均線</div>
+        <div class="metric-value">{ma100_value:,.2f}</div>
+        <div class="metric-desc">Long-Term Trend</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -875,18 +901,18 @@ col13, col14, col15 = st.columns(3)
 with col13:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">MA60、60日均線</div>
-        <div class="metric-value">{ma60_value:,.2f}</div>
-        <div class="metric-desc">Medium-Term Trend</div>
+        <div class="metric-title">MA15、15日均線</div>
+        <div class="metric-value">{ma15_value:,.2f}</div>
+        <div class="metric-desc">Short-Term Trend</div>
     </div>
     """, unsafe_allow_html=True)
 
 with col14:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">MA100、100日均線</div>
-        <div class="metric-value">{ma100_value:,.2f}</div>
-        <div class="metric-desc">Long-Term Trend</div>
+        <div class="metric-title">MA60、60日均線</div>
+        <div class="metric-value">{ma60_value:,.2f}</div>
+        <div class="metric-desc">Medium-Term Trend</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -896,6 +922,52 @@ with col15:
         <div class="metric-title">MA200、200日均線</div>
         <div class="metric-value">{ma200_value:,.2f}</div>
         <div class="metric-desc">Long-Term Trend</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+#第六欄
+
+col16, col17, col18 = st.columns(3)
+
+with col16:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">短期突破</div>
+        <div class="metric-value" style="color:{short_color}">
+            {short_signal}
+        </div>
+        <div class="metric-desc">
+            MA5 vs MA15<br>
+            Strength: {short_strength:.2f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col17:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">中期突破</div>
+        <div class="metric-value" style="color:{mid_color}">
+            {mid_signal}
+        </div>
+        <div class="metric-desc">
+            MA30 vs MA60<br>
+            Strength: {mid_strength:.2f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col18:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">長期突破</div>
+        <div class="metric-value" style="color:{long_color}">
+            {long_signal}
+        </div>
+        <div class="metric-desc">
+            MA100 vs MA200<br>
+            Strength: {long_strength:.2f}%
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
