@@ -324,6 +324,19 @@ atr_value = atr.iloc[-1]
 atr_norm = atr / df["close"]
 atr_value_norm = atr_norm.iloc[-1]
 
+#  ===ATR(20) ===
+
+atr20 = tr.ewm(
+    alpha=1/20,
+    adjust=False,
+    min_periods=20
+).mean()
+
+atr20_value = atr20.iloc[-1]
+
+atr20_norm = atr20 / df["close"]
+atr20_value_norm = atr20_norm.iloc[-1]
+
 # =========================
 # Bollinger width、壓縮或擴張：壓縮=市場安靜(<0.05)、寬=市場劇烈(>0.08)
 # =========================
@@ -800,9 +813,9 @@ with col5:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">NATR、標準化波動</div>
-        <div class="metric-value">{atr_value_norm:.4f}</div>
+        <div class="metric-value">{atr_value_norm:.2%}</div>
         <div class="metric-desc">
-            價格百分比波動，正常約0.02，數值越大波動程度越高<br>
+            價格百分比波動，正常約2%，數值越大波動程度越高<br>
             可跨商品比較波動性
         </div>
     </div>
@@ -866,7 +879,6 @@ with col9:
 st.subheader("🧭 MA Structure")
 
 #第四、五欄
-
 col10, col11, col12 = st.columns(3)
 
 with col10:
@@ -926,7 +938,6 @@ with col15:
     """, unsafe_allow_html=True)
 
 #第六欄
-
 col16, col17, col18 = st.columns(3)
 
 with col16:
@@ -967,6 +978,34 @@ with col18:
         <div class="metric-desc">
             MA100 vs MA200<br>
             Strength: {long_strength:.2f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# For Trade====================================
+st.subheader("🧭 For Trade")
+
+#第七欄
+col19, col20, col21 = st.columns(3)
+
+with col19:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">ATR20</div>
+        <div class="metric-value">{atr20_value:.2f}</div>
+        <div class="metric-desc">
+            20日平均波動幅度
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col20:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">NATR20</div>
+        <div class="metric-value">{atr20_value_norm:.2%}</div>
+        <div class="metric-desc">
+            20日價格百分比波動
         </div>
     </div>
     """, unsafe_allow_html=True)
