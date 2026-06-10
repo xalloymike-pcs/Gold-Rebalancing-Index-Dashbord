@@ -324,6 +324,32 @@ atr_value = atr.iloc[-1]
 atr_norm = atr / df["close"]
 atr_value_norm = atr_norm.iloc[-1]
 
+#  ===ATR(5) ===
+
+atr5 = tr.ewm(
+    alpha=1/5,
+    adjust=False,
+    min_periods=5
+).mean()
+
+atr5_value = atr5.iloc[-1]
+
+atr5_norm = atr5 / df["close"]
+atr5_value_norm = atr5_norm.iloc[-1]
+
+#  ===ATR(10) ===
+
+atr10 = tr.ewm(
+    alpha=1/10,
+    adjust=False,
+    min_periods=10
+).mean()
+
+atr10_value = atr10.iloc[-1]
+
+atr10_norm = atr10 / df["close"]
+atr10_value_norm = atr10_norm.iloc[-1]
+
 #  ===ATR(20) ===
 
 atr20 = tr.ewm(
@@ -983,12 +1009,34 @@ with col18:
     """, unsafe_allow_html=True)
 
 # For Trade====================================
-st.subheader("🧭 For Trade")
+st.subheader("🧭 For Short-Term Trade")
 
 #第七欄
 col19, col20, col21 = st.columns(3)
 
 with col19:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">ATR5</div>
+        <div class="metric-value">{atr5_value:.2f}</div>
+        <div class="metric-desc">
+            5日平均波動幅度
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col20:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">ATR10</div>
+        <div class="metric-value">{atr10_value:.2f}</div>
+        <div class="metric-desc">
+            10日平均波動幅度
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col21:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">ATR20</div>
@@ -999,7 +1047,31 @@ with col19:
     </div>
     """, unsafe_allow_html=True)
 
-with col20:
+col22, col23, col24 = st.columns(3)
+
+with col22:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">NATR5</div>
+        <div class="metric-value">{atr5_value_norm:.2%}</div>
+        <div class="metric-desc">
+            5日價格百分比波動
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col23:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">NATR10</div>
+        <div class="metric-value">{atr10_value_norm:.2%}</div>
+        <div class="metric-desc">
+            10日價格百分比波動
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col24:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">NATR20</div>
@@ -1010,7 +1082,7 @@ with col20:
     </div>
     """, unsafe_allow_html=True)
 
-#底部說明
+#底部說明====================================
 
 st.markdown(
     """
