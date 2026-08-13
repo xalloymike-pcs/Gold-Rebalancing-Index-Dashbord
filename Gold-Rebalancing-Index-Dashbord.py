@@ -216,7 +216,7 @@ high_s = pd.Series(high)
 low_s = pd.Series(low)
 close_s = pd.Series(close)
 
-em5 = close_s.ewm(span=5).mean()
+ema5 = close_s.ewm(span=5).mean()
 ema20 = close_s.ewm(span=20).mean()
 ema60 = close_s.ewm(span=60).mean()
 std20 = close_s.ewm(span=20).std()
