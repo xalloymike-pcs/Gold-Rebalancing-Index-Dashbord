@@ -216,6 +216,7 @@ high_s = pd.Series(high)
 low_s = pd.Series(low)
 close_s = pd.Series(close)
 
+em5 = close_s.ewm(span=5).mean()
 ema20 = close_s.ewm(span=20).mean()
 ema60 = close_s.ewm(span=60).mean()
 std20 = close_s.ewm(span=20).std()
@@ -237,7 +238,7 @@ vol = (np.sqrt(parkinson_vol_series.iloc[-1])* np.sqrt(252))
 # 📈 2. Trend 趨勢
 # =========================
 
-trend_series = np.log(ema20 / ema60)
+trend_series = np.log(ema5 / ema20)
 trend = trend_series.iloc[-1]
 
 # =========================
@@ -901,8 +902,8 @@ with col9:
     </div>
     """, unsafe_allow_html=True)
 
-# MA Structure====================================
-st.subheader("🧭 MA Structure")
+# SMA Structure====================================
+st.subheader("🧭 SMA Structure")
 
 #第四、五欄
 col10, col11, col12 = st.columns(3)
